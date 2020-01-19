@@ -8,13 +8,15 @@ import xml.dom.minidom
 import re
 import sys
 
+
 # 获取配置文件解释器
-def getConfigParser() :
+def getConfigParser():
     configFile = os.path.join(os.path.dirname(__file__), 'config.ini')
     if os.path.exists(configFile):
         parser = ConfigParser.ConfigParser()
         parser.read(configFile)
         return parser
+
 
 # 判断是否是资源目录
 def isResDir(projectOrResDir):
@@ -30,10 +32,12 @@ def isResDir(projectOrResDir):
                         return True
     return False
 
+
 # 判断是否是Eclipse的工程
 def isEclipseProject(projectDir):
     manifestFile = os.path.join(projectDir, 'AndroidManifest.xml')
     return os.path.exists(manifestFile)
+
 
 # 判断是否是AndroidStudio的工程
 def isAndroidStudioProject(projectDir):
@@ -43,6 +47,7 @@ def isAndroidStudioProject(projectDir):
         return False
     else:
         return os.path.exists(gradleFile)
+
 
 def getDefaultAaptFile(sdkdir):
     toolsPath = os.path.join(sdkdir, 'build-tools')
@@ -54,6 +59,7 @@ def getDefaultAaptFile(sdkdir):
             print 'aapt is at ' + aaptPath
             return aaptPath
 
+
 def getDefaultAndroidjarFile(sdkdir):
     platformPath = os.path.join(sdkdir, 'platforms')
     if os.path.exists(platformPath):
@@ -63,6 +69,7 @@ def getDefaultAndroidjarFile(sdkdir):
             androidjarPath = os.path.join(verPath, 'android.jar')
             print 'android.jar is at ' + androidjarPath
             return androidjarPath
+
 
 def getAaptFile(isEclipse, projectDir, sdkdir):
     # 对Eclipse工程，在工程目录的project.properties文件中配置有编译时使用的目标版本
@@ -106,6 +113,7 @@ def getAaptFile(isEclipse, projectDir, sdkdir):
                     print 'aapt is at ' + aaptPath
                     return aaptPath
 
+
 def getAndroidjarFile(isEclipse, projectDir, sdkdir):
     # 对Eclipse工程，在工程目录的project.properties文件中配置有编译时使用的目标版本
     # 如：target=android-23
@@ -139,6 +147,7 @@ def getAndroidjarFile(isEclipse, projectDir, sdkdir):
                     androidjarPath = os.path.join(verPath, 'android.jar')
                     print 'android.jar is at ' + androidjarPath
                     return androidjarPath
+
 
 def getIsLibraryProject(isEclipse, projectDir):
     # 对Eclipse工程，在工程目录的project.properties文件中配置有该工程是否是library工程的标记
@@ -176,7 +185,8 @@ def getIsLibraryProject(isEclipse, projectDir):
                         isLibrary = False
                     print 'This is a library project? ' + str(isLibrary)
                     return isLibrary
-    
+
+
 def getRPath(isEclipse, projectDir):
     if isEclipse:
         path = os.path.join(projectDir, 'gen')
@@ -186,7 +196,8 @@ def getRPath(isEclipse, projectDir):
         path = os.path.join(projectDir, r'build\generated\source\r\release')
         print 'The R.java is in to generate at ' + path
         return path
-    
+
+
 def getResPath(isEclipse, projectDir):
     if isEclipse:
         path = os.path.join(projectDir, 'res')
@@ -196,7 +207,8 @@ def getResPath(isEclipse, projectDir):
         path = os.path.join(projectDir, r'src\main\res')
         print 'The project res path is ' + path
         return path
-    
+
+
 def getManifestFile(isEclipse, projectDir):
     if isEclipse:
         manifestFile = os.path.join(projectDir, 'AndroidManifest.xml')
@@ -206,7 +218,8 @@ def getManifestFile(isEclipse, projectDir):
         manifestFile = os.path.join(projectDir, r'src\main\AndroidManifest.xml')
         print 'The manifest file is ' + manifestFile
         return manifestFile
-    
+
+
 def getPackageName(isEclipse, projectDir):
     manifestFile = getManifestFile(isEclipse, projectDir)
     if os.path.exists(manifestFile):
@@ -220,6 +233,7 @@ def getPackageName(isEclipse, projectDir):
             print 'The package name is ' + packageName
             return packageName
 
+
 def getRClassFile(isEclipse, projectDir, RPath):
     packageName = getPackageName(isEclipse, projectDir)
     if packageName is not None and packageName != '':
@@ -230,6 +244,7 @@ def getRClassFile(isEclipse, projectDir, RPath):
         RClassFile = os.path.join(RClassFile, 'R.java')
         print 'The generated R.java is ' + RClassFile
         return RClassFile
+
 
 def getSrcPathList(isEclipse, projectDir):
     srcPath = []
@@ -265,7 +280,8 @@ def getSrcPathList(isEclipse, projectDir):
                         stripLine = stripLine[pos + len('java.srcDirs'):].lstrip()
                         assert len(stripLine) > 2
                         if stripLine[0:2] == '+=':
-                            srcPath.append(os.path.join(projectDir, 'src' + os.path.sep + 'main' + os.path.sep + 'java'))
+                            srcPath.append(os.path.join(projectDir,
+                                                        'src' + os.path.sep + 'main' + os.path.sep + 'java'))
                             stripLine = stripLine[2:]
                         stripLine = stripLine.lstrip(' [=').rstrip(']')
                         splitLine = stripLine.split(',')
@@ -283,12 +299,15 @@ def getSrcPathList(isEclipse, projectDir):
                     if braceCount <= 0:
                         break
             if len(srcPath) == 0:
-                srcPath.append(os.path.join(projectDir, 'src' + os.path.sep + 'main' + os.path.sep + 'java'))
+                srcPath.append(
+                    os.path.join(projectDir, 'src' + os.path.sep + 'main' + os.path.sep + 'java'))
             return srcPath
         else:
-            srcPath.append(os.path.join(projectDir, 'src' + os.path.sep + 'main' + os.path.sep + 'java'))
+            srcPath.append(
+                os.path.join(projectDir, 'src' + os.path.sep + 'main' + os.path.sep + 'java'))
             return srcPath
-    
+
+
 def getDestRClassPath(isEclipse, projectDir, destRClassPackage):
     if isEclipse:
         destRClassPath = os.path.join(projectDir, 'src')
@@ -304,72 +323,73 @@ def getDestRClassPath(isEclipse, projectDir, destRClassPackage):
             destRClassPath = os.path.join(destRClassPath, splitItem)
         print 'The new R.java is ' + destRClassPath
         return destRClassPath
-    
+
+
 def getExtraAddedStr(newLine):
     extraStr = \
-'''import android.content.Context;
-import android.util.Log;
-
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
-
-public final class R2 {
-    private static String mPackageName;
-    private static WeakReference<Context> mContextRef;
-
-    public static void init(Context context) {
-        if (context != null) {
-            mPackageName = context.getPackageName();
-            // try to get R class in the package
-            try {
-                Class.forName(mPackageName + ".R");
-                mContextRef = null;
+        '''import android.content.Context;
+        import android.util.Log;
+        
+        import java.lang.ref.WeakReference;
+        import java.lang.reflect.Field;
+        
+        public final class R2 {
+            private static String mPackageName;
+            private static WeakReference<Context> mContextRef;
+        
+            public static void init(Context context) {
+                if (context != null) {
+                    mPackageName = context.getPackageName();
+                    // try to get R class in the package
+                    try {
+                        Class.forName(mPackageName + ".R");
+                        mContextRef = null;
+                    }
+                    // if R class is not exist, record the context by WeakReference
+                    catch (ClassNotFoundException e) {
+                        Log.i("Eplay init info","No R class");
+                        mContextRef = new WeakReference<>(context);
+                    }
+                }
             }
-            // if R class is not exist, record the context by WeakReference
-            catch (ClassNotFoundException e) {
-                Log.i("Eplay init info","No R class");
-                mContextRef = new WeakReference<>(context);
+        
+            private static int getResId(String resName, String resType) {
+                // The WeakReference is null indicates the R class exists. We can use reflection to get the resource id.
+                // Using reflection to get the resource id is much faster than getResources().getIdentifier()
+                if (mContextRef == null) {
+                    try {
+                        Field field = Class.forName(mPackageName + ".R$" + resType).getField(resName);
+                        return (int)field.get(null);
+                    }
+                    catch (Throwable t) {
+                        Log.e("get id failed", "id " + resName + " could not be found");
+                    }
+                }
+                // The WeakReference is not null indicates the R class does not exist.
+                // We should use getResources().getIdentifier() method to get resource id.
+                else {
+                    Context context = mContextRef.get();
+                    if (context != null) {
+                        return context.getResources().getIdentifier(resName, resType, mPackageName);
+                    }
+                }
+                return 0;
             }
-        }
-    }
-
-    private static int getResId(String resName, String resType) {
-        // The WeakReference is null indicates the R class exists. We can use reflection to get the resource id.
-        // Using reflection to get the resource id is much faster than getResources().getIdentifier()
-        if (mContextRef == null) {
-            try {
-                Field field = Class.forName(mPackageName + ".R$" + resType).getField(resName);
-                return (int)field.get(null);
-            }
-            catch (Throwable t) {
-                Log.e("get id failed", "id " + resName + " could not be found");
-            }
-        }
-        // The WeakReference is not null indicates the R class does not exist.
-        // We should use getResources().getIdentifier() method to get resource id.
-        else {
-            Context context = mContextRef.get();
-            if (context != null) {
-                return context.getResources().getIdentifier(resName, resType, mPackageName);
-            }
-        }
-        return 0;
-    }
-'''
+        '''
     if newLine != '\n':
         extraStr = extraStr.replace('\n', newLine)
     return extraStr
 
 def convertR(isLibrary, RClassFile, destRClassPackage):
     # 获取R类文件中的换行符号
-    fp = open(RClassFile, 'rU') 
+    fp = open(RClassFile, 'rU')
     fp.readlines()
     newl = fp.newlines
     # 读取R类文件内容
-    fp = codecs.open(RClassFile, 'rU', 'utf-8') 
+    fp = codecs.open(RClassFile, 'rU', 'utf-8')
     rlines = fp.readlines()
     fp.close()
-    
+
     # 修改R类package和import和新增的函数
     newRLines = ['package ' + destRClassPackage + ";" + newl, newl, getExtraAddedStr(newl), newl]
 
@@ -401,10 +421,23 @@ def convertR(isLibrary, RClassFile, destRClassPackage):
                     leftLine = splitLine[0]
                     resName = splitLine[0].strip()
                     if resName.startswith(styleableResIDPrefix):
-                        newLine = leftLine.rstrip()
-                        newRLines.append(newLine + newl)
                         if not tempLine.strip().endswith('};'):
                             inStyleable = True
+                            # convert styleableResId
+                            styleableResIdValuesText = ""
+                            nextIndex = index
+                            while True:
+                                nextIndex += 1
+                                nextLine = rlines[nextIndex]
+                                if nextLine.strip().endswith('};'):
+                                    break
+                                styleableResIdValuesText += nextLine.strip()
+                            # append
+                            newLine = leftLine +"=" + styleableResIdValuesText
+                            newRLines.append(newLine + newl)
+                        else:
+                            newLine = tempLine
+                            newRLines.append(newLine + newl)
                     else:
                         if currentResType != 'styleable':
                             resName = resName[len(resIDPrefix):].strip()
@@ -418,6 +451,7 @@ def convertR(isLibrary, RClassFile, destRClassPackage):
     newRLines = processComment(newRLines)
     processStyleable(newRLines, resIDPrefix, styleableResIDPrefix, newl)
     return newRLines
+
 
 def processComment(RLines):
     isInComment = False
@@ -439,7 +473,10 @@ def processStyleable(newRLines, resIDPrefix, styleableResIDPrefix, newl):
         splitLine = tempLine.split('=')
         leftLine = splitLine[0]
         resName = splitLine[0].strip()
-        if resName.startswith(styleableResIDPrefix):
+        if resName.startswith(styleableResIDPrefix):               
+            # modify
+            styleableResIdValues = splitLine[1].strip().split(",")
+            # convert styleable attr
             resName = resName[len(styleableResIDPrefix):].strip()
             styleableDict = {}
             nextIndex = index
@@ -450,9 +487,14 @@ def processStyleable(newRLines, resIDPrefix, styleableResIDPrefix, newl):
                 if parsedLine is None:
                     break
                 styleableDict[parsedLine[0]] = parsedLine[1]
+            # convert
             allStyleable = ""
             for temp in range(len(styleableDict)):
-                allStyleable = allStyleable + "attr." + styleableDict[str(temp)]
+                if styleableResIdValues[temp].find('0x01') != -1:
+                    name = styleableResIdValues[temp].strip()
+                else:
+                    name = "attr." + styleableDict[str(temp)]
+                allStyleable = allStyleable + name
                 if temp != len(styleableDict) - 1:
                     allStyleable = allStyleable + ", "
             newLine = leftLine.rstrip() + ' = { ' + allStyleable + ' };' + newl
@@ -478,6 +520,7 @@ def parseStyleableLine(styleableLine, styleableName, resIDPrefix):
     resValue = resValue[:-1]
     return (resValue, resName)
 
+
 def writeToFile(filePath, fileContentList):
     # 写入目标R类所在的目录
     if not os.path.exists(filePath):
@@ -486,7 +529,8 @@ def writeToFile(filePath, fileContentList):
     destRClassFp = codecs.open(destRClassFile, 'w', 'utf-8')
     destRClassFp.writelines(fileContentList)
     destRClassFp.close()
-    
+
+
 def replaceCodeImport(srcPathList, package, RPackageName):
     srcImportString = 'import ' + package + '.R;'
     replaceImportString = 'import ' + RPackageName + '.R2;'
@@ -502,7 +546,7 @@ def replaceCodeImport(srcPathList, package, RPackageName):
                 fp = open(codeFile, 'r')
                 codeFileContent = fp.readlines()
                 fp.close()
-                
+
                 atImportPart = False
                 isChanged = False
                 for index in range(len(codeFileContent)):
@@ -513,18 +557,20 @@ def replaceCodeImport(srcPathList, package, RPackageName):
                         if thisLine.strip() != '' and not thisLine.find('import ') != -1:
                             break
                         if thisLine.find(srcImportString) != -1:
-                            codeFileContent[index] = thisLine.replace(srcImportString, replaceImportString)
-                            isChanged = True 
+                            codeFileContent[index] = thisLine.replace(srcImportString,
+                                                                      replaceImportString)
+                            isChanged = True
                 if isChanged:
                     print 'replacing file ' + temp
                     fp = open(codeFile, 'w')
                     fp.writelines(codeFileContent)
                     fp.close()
-    
+
+
 def process():
     # 没有相应配置，返回
     if not os.path.exists(sdkdir) or not os.path.exists(ProjectOrResDir):
-         raise RuntimeError('Invalid parameters')
+        raise RuntimeError('Invalid parameters')
 
     # 判断所给路径是工程路径还是资源文件夹路径
     isRes = isResDir(ProjectOrResDir)
@@ -539,22 +585,23 @@ def process():
             raise RuntimeError('Unknown project type')
         processProjectDir(isEclipse, ProjectOrResDir, sdkdir, destRClassPackage, isReplaceCode)
 
+
 def processResDir(resDir, sdkdir, destRClassPackage):
     # 获取android sdk中的aapt文件路径和android.jar文件路径
     aaptFile = getDefaultAaptFile(sdkdir)
     androidjarFile = getDefaultAndroidjarFile(sdkdir)
     # 获取不到文件，或者文件不存在，返回
     if aaptFile is None or not os.path.exists(aaptFile):
-         raise RuntimeError('Cannot find aapt.exe in ' + sdkdir)
+        raise RuntimeError('Cannot find aapt.exe in ' + sdkdir)
     if androidjarFile is None or not os.path.exists(androidjarFile):
-         raise RuntimeError('Cannot find android.jar in ' + sdkdir)
+        raise RuntimeError('Cannot find android.jar in ' + sdkdir)
     # 通过aapt生成R.java类路径(使用资源目录的同级目录)
     RPath = os.path.dirname(resDir)
     # AndroidManifest.xml文件路径（使用AndroidRClassGenerator中自带的AndroidManifest.xml）
     manifestFile = os.path.join(os.path.dirname(__file__), 'AndroidManifest.xml')
 
     isLibrary = True
-    command = aaptFile + ' p -J '+ RPath + ' -S ' + resDir + ' -M ' + manifestFile + ' -I ' + androidjarFile
+    command = aaptFile + ' p -J ' + RPath + ' -S ' + resDir + ' -M ' + manifestFile + ' -I ' + androidjarFile
     # 对Library工程需要添加参数--non-constant-id，这样生成的R.java中的资源id就是public static int，否则是public static final int
     if isLibrary:
         command += ' --non-constant-id'
@@ -568,15 +615,16 @@ def processResDir(resDir, sdkdir, destRClassPackage):
     newRLines = convertR(isLibrary, RClassFile, destRClassPackage)
     writeToFile(RPath, newRLines)
 
+
 def processProjectDir(isEclipse, projectDir, sdkdir, destRClassPackage, isReplaceCode):
     # 获取android sdk中的aapt文件路径和android.jar文件路径
     aaptFile = getAaptFile(isEclipse, projectDir, sdkdir)
     androidjarFile = getAndroidjarFile(isEclipse, projectDir, sdkdir)
     # 获取不到文件，或者文件不存在，返回
     if aaptFile is None or not os.path.exists(aaptFile):
-         raise RuntimeError('Cannot find aapt.exe in ' + sdkdir)
+        raise RuntimeError('Cannot find aapt.exe in ' + sdkdir)
     if androidjarFile is None or not os.path.exists(androidjarFile):
-         raise RuntimeError('Cannot find android.jar in ' + sdkdir)
+        raise RuntimeError('Cannot find android.jar in ' + sdkdir)
     # 通过aapt生成R.java类路径，项目中res文件夹路径和AndroidManifest.xml文件路径
     RPath = getRPath(isEclipse, projectDir)
     resPath = getResPath(isEclipse, projectDir)
@@ -584,10 +632,10 @@ def processProjectDir(isEclipse, projectDir, sdkdir, destRClassPackage, isReplac
     if not os.path.exists(RPath):
         os.makedirs(RPath)
     if not os.path.exists(resPath) or not os.path.exists(manifestFile):
-         raise RuntimeError('Cannot find resPath or manifest file in ' + projectDir)
+        raise RuntimeError('Cannot find resPath or manifest file in ' + projectDir)
     # 判断工程是否是Library工程
     isLibrary = getIsLibraryProject(isEclipse, projectDir)
-    command = aaptFile + ' p -m -J '+ RPath + ' -S ' + resPath + ' -M ' + manifestFile + ' -I ' + androidjarFile
+    command = aaptFile + ' p -m -J ' + RPath + ' -S ' + resPath + ' -M ' + manifestFile + ' -I ' + androidjarFile
     # 对Library工程需要添加参数--non-constant-id，这样生成的R.java中的资源id就是public static int，否则是public static final int
     if isLibrary:
         command += ' --non-constant-id'
@@ -613,7 +661,8 @@ def processProjectDir(isEclipse, projectDir, sdkdir, destRClassPackage, isReplac
         srcPathList = getSrcPathList(isEclipse, projectDir)
         replaceCodeImport(srcPathList, package, destRClassPackage)
 
-if  __name__ == '__main__':
+
+if __name__ == '__main__':
     configParser = getConfigParser()
     if configParser is None:
         raise RuntimeError('Get parser failed')
