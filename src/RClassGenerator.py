@@ -313,7 +313,7 @@ import android.util.Log;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 
-public final class NewR {
+public final class R2 {
     private static String mPackageName;
     private static WeakReference<Context> mContextRef;
 
@@ -482,14 +482,14 @@ def writeToFile(filePath, fileContentList):
     # 写入目标R类所在的目录
     if not os.path.exists(filePath):
         os.makedirs(filePath)
-    destRClassFile = os.path.join(filePath, 'NewR.java')
+    destRClassFile = os.path.join(filePath, 'R2.java')
     destRClassFp = codecs.open(destRClassFile, 'w', 'utf-8')
     destRClassFp.writelines(fileContentList)
     destRClassFp.close()
     
 def replaceCodeImport(srcPathList, package, RPackageName):
     srcImportString = 'import ' + package + '.R;'
-    replaceImportString = 'import ' + RPackageName + '.R;'
+    replaceImportString = 'import ' + RPackageName + '.R2;'
     srcImportString = srcImportString.encode('ascii')
     replaceImportString = replaceImportString.encode('ascii')
     for srcPath in srcPathList:
@@ -582,7 +582,7 @@ def processProjectDir(isEclipse, projectDir, sdkdir, destRClassPackage, isReplac
     resPath = getResPath(isEclipse, projectDir)
     manifestFile = getManifestFile(isEclipse, projectDir)
     if not os.path.exists(RPath):
-        os.mkdir(RPath)
+        os.makedirs(RPath)
     if not os.path.exists(resPath) or not os.path.exists(manifestFile):
          raise RuntimeError('Cannot find resPath or manifest file in ' + projectDir)
     # 判断工程是否是Library工程
